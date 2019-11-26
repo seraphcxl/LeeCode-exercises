@@ -93,10 +93,37 @@ public class FriendCircles {
      * @return i节点的根节点ID，如果没有，就是返回自己的ID
      */
     int find(int[] parent, int i) {
-        if (parent[i] == -1) {
+        if (parent[i] == i) {
             return i;
         }
         return find(parent, parent[i]);
+    }
+
+    /**
+     * 查找 i 节点的根节点是谁，带 路径压缩 能力
+     *
+     * @param parent 保存连接关系的数组
+     * @param i i节点
+     * @return i节点的根节点ID，如果没有，就是返回自己的ID
+     */
+    int find_Gen2(int[] parent, int i) {
+        int r = i;
+        while (parent[r] != r) {
+            r = parent[r];
+        }
+
+        // 路径压缩
+        int x = i;
+        int y = 0;
+        while (x != r) {
+            // 在改变上级之前用临时变量 y 记录下他的值
+            y = parent[x];
+            // 把上级改为根节点
+            parent[x]= r;
+            x = y;
+        }
+
+        return r;
     }
 
     /**
@@ -107,8 +134,8 @@ public class FriendCircles {
      * @param y 父节点ID
      */
     void union(int[] parent, int x, int y) {
-        int xSet = find(parent, x);
-        int ySet = find(parent, y);
+        int xSet = find_Gen2(parent, x);
+        int ySet = find_Gen2(parent, y);
         if (xSet != ySet) {
             parent[xSet] = ySet;
         }
@@ -117,7 +144,11 @@ public class FriendCircles {
     public int findCircleNum_Gen3(int[][] M) {
         // 构建 并查集
         int[] parent = new int[M.length];
-        Arrays.fill(parent, -1);
+//        Arrays.fill(parent, -1);
+        for (int i = 0; i < M.length; ++i) {
+            parent[i] = i;
+        }
+
         for (int i = 0; i < M.length; i++) {
             for (int j = 0; j < M.length; j++) {
                 if (M[i][j] == 1 && i != j) {
@@ -129,7 +160,7 @@ public class FriendCircles {
         // 计算有几个根节点
         int count = 0;
         for (int i = 0; i < parent.length; i++) {
-            if (parent[i] == -1) {
+            if (parent[i] == i) {
                 count++;
             }
         }
